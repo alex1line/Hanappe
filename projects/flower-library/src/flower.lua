@@ -1382,8 +1382,7 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
     self.nextScene:open(params)
 
     -- scene animation
-    Executors.callOnce(
-    function()
+    local fun = function()
         local animation = self:getSceneAnimationByName(params.animation)
         animation(self.currentScene or Scene(), self.nextScene, params)
 
@@ -1398,7 +1397,12 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
 
         self:dispatchEvent(Event.OPEN_COMPLETE)
     end
-    )
+
+    if params.atomic then
+        fun()
+    else
+        Executors.callOnce(fun)
+    end
 
     return self.nextScene
 end
@@ -1440,8 +1444,7 @@ function SceneMgr:closeScene(params)
     -- stop current scene
     self.currentScene:stop(params)
 
-    Executors.callOnce(
-    function()
+    local fun = function()
         local animation = self:getSceneAnimationByName(params.animation)
         animation(self.closingSceneGroup, self.nextScene or Scene(), params)
 
@@ -1462,7 +1465,12 @@ function SceneMgr:closeScene(params)
 
         self:dispatchEvent(Event.CLOSE_COMPLETE)
     end
-    )
+
+    if params.atomic then
+        fun()
+    else
+        Executors.callOnce(fun)
+    end
 
     return true
 end
