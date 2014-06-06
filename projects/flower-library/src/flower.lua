@@ -205,6 +205,14 @@ function M.callOnce(func, ...)
     return Executors.callOnce(func, ...)
 end
 
+function M.getCurrentSceneName()
+    return SceneMgr:getCurrentSceneName()
+end
+
+function M.getPrevSceneName()
+    return SceneMgr:getPrevSceneName()
+end
+
 ----------------------------------------------------------------------------------------------------
 -- @type class
 --
@@ -1313,6 +1321,7 @@ M.SceneMgr = SceneMgr
 SceneMgr.scenes = {}
 SceneMgr.currentScene = nil
 SceneMgr.nextScene = nil
+SceneMgr.prevScene = nil
 SceneMgr.nextSceneIndex = nil
 SceneMgr.closingSceneSize = nil
 SceneMgr.closingSceneGroup = nil
@@ -1457,6 +1466,7 @@ function SceneMgr:closeScene(params)
 
         self.closingSceneGroup = nil
         self.closingSceneSize = nil
+        self.prevScene = self.currentScene
         self.currentScene = self.nextScene
         self.nextScene = nil
         self.transitioning = false
@@ -1569,6 +1579,16 @@ function SceneMgr:onEnterFrame(e)
             scene:dispatchEvent(Event.UPDATE)
         end
     end
+end
+
+function SceneMgr:getCurrentSceneName()
+    local scene = self.currentScene
+    return scene and scene.name or ""
+end
+
+function SceneMgr:getPrevSceneName()
+    local scene = self.prevScene
+    return scene and scene.name or ""
 end
 
 ----------------------------------------------------------------------------------------------------
