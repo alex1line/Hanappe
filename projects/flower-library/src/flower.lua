@@ -1400,6 +1400,7 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
             self.currentScene:close(params)
         end
 
+        self.prevScene = self.currentScene
         self.currentScene = self.nextScene
         self.nextScene = nil
         self.transitioning = false
