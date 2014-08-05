@@ -520,7 +520,9 @@ function Executors.callLaterTime(time, func, ...)
     local timer = MOAITimer.new()
     timer:setSpan(time)
     timer:setListener(MOAITimer.EVENT_TIMER_END_SPAN, function() func(unpack(args)) end)
-    timer:start()
+    Executors.callOnce(function()
+        timer:start()
+    end)
     return timer
 end
 
@@ -536,7 +538,9 @@ function Executors.callLoopTime(time, func, ...)
     timer:setMode(MOAITimer.LOOP)
     timer:setSpan(time) -- EVENT_TIMER_LOOP
     timer:setListener(MOAITimer.EVENT_TIMER_BEGIN_SPAN, function() func(unpack(args)) end)
-    timer:start()
+    Executors.callOnce(function()
+        timer:start()
+    end)
     return timer
 end
 
