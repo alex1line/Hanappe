@@ -1342,6 +1342,12 @@ function SceneMgr:initialize()
     RenderMgr:addChild(self)
 
     self.sceneFactory = self.sceneFactory or ClassFactory(Scene)
+
+    self.transitionQueue = {}
+    self:addEventListener(Event.OPEN_COMPLETE, function()
+        self.blockTransition = false
+        self:__internalOpenScene()
+    end)
 end
 
 ---
@@ -1371,6 +1377,22 @@ end
 --   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
 function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
+    table.insertElement(self.transitionQueue, {sceneName, params, currentCloseFlag})
+
+    self:__internalOpenScene()
+end
+
+function SceneMgr:__internalOpenScene()
+    if self.blockTransition then return end
+
+    local p = table.remove(self.transitionQueue, 1)
+    if not p then return end
+
+    self.blockTransition = true
+    self:_internalOpenScene(p[1], p[2], p[3])
+end
+
+function SceneMgr:_internalOpenScene(sceneName, params, currentCloseFlag)
     params = params or {}
 
     -- state check
