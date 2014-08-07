@@ -239,10 +239,13 @@ function class:__call(...)
     for i = #bases, 1, -1 do
         table.copy(bases[i], clazz)
     end
+    clazz.__class = clazz
     clazz.__super = bases[1]
     clazz.__call = function(self, ...)
         return self:__new(...)
     end
+    clazz.__interface = {__index = clazz}
+    setmetatable(clazz.__interface, clazz.__interface)
     return setmetatable(clazz, clazz)
 end
 
@@ -268,18 +271,11 @@ function class:__object_factory()
 
     if moai_class then
         local obj = moai_class.new()
-        obj.__class = self
-
-        local interface = { }
-        setmetatable(interface,interface)
-        interface.__index = self
-        obj:setInterface(interface)
-
+        obj:setInterface(self.__interface)
         return obj
     end
 
-    local obj = {__index = self, __class = self}
-    return setmetatable(obj, obj)
+    return setmetatable({}, self.__interface)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -1346,6 +1342,12 @@ function SceneMgr:initialize()
     RenderMgr:addChild(self)
 
     self.sceneFactory = self.sceneFactory or ClassFactory(Scene)
+
+    self.transitionQueue = {}
+    self:addEventListener(Event.OPEN_COMPLETE, function()
+        self.blockTransition = false
+        self:__internalOpenScene()
+    end)
 end
 
 ---
@@ -1372,9 +1374,25 @@ end
 --   <li>animation: Scene animation of transition. </li>
 --   <li>second: Time to scene animation. </li>
 --   <li>easeType: EaseType to animation scene. </li>
---   <li>atomic: Other threads wait until action will finish. </li>
+--   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
 function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
+    table.insertElement(self.transitionQueue, {sceneName, params, currentCloseFlag})
+
+    self:__internalOpenScene()
+end
+
+function SceneMgr:__internalOpenScene()
+    if self.blockTransition then return end
+
+    local p = table.remove(self.transitionQueue, 1)
+    if not p then return end
+
+    self.blockTransition = true
+    self:_internalOpenScene(p[1], p[2], p[3])
+end
+
+function SceneMgr:_internalOpenScene(sceneName, params, currentCloseFlag)
     params = params or {}
 
     -- state check
@@ -1413,7 +1431,7 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
         self:dispatchEvent(Event.OPEN_COMPLETE)
     end
 
-    if params.atomic then
+    if params.sync then
         funAnimation()
     else
         Executors.callOnce(funAnimation)
@@ -1431,7 +1449,7 @@ end
 --   <li>easeType: EaseType to animation scene. </li>
 --   <li>backScene: The name of the scene you want to back. </li>
 --   <li>backSceneCount: Number of scene you want to back. </li>
---   <li>atomic: Other threads wait until action will finish. </li>
+--   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
 -- @param params (option)Parameters of the Scene
 function SceneMgr:closeScene(params)
@@ -1483,7 +1501,7 @@ function SceneMgr:closeScene(params)
         self:dispatchEvent(Event.CLOSE_COMPLETE)
     end
 
-    if params.atomic then
+    if params.sync then
         funAnimation()
     else
         Executors.callOnce(funAnimation)
