@@ -1344,10 +1344,12 @@ function SceneMgr:initialize()
     self.sceneFactory = self.sceneFactory or ClassFactory(Scene)
 
     self.transitionQueue = {}
-    self:addEventListener(Event.OPEN_COMPLETE, function()
+    local nextTransition = function()
         self.blockTransition = false
-        self:__internalOpenScene()
-    end)
+        self:_getNextTransition()
+    end
+    self:addEventListener(Event.OPEN_COMPLETE, nextTransition)
+    self:addEventListener(Event.CLOSE_COMPLETE, nextTransition)
 end
 
 ---
@@ -1367,6 +1369,16 @@ function SceneMgr:openScene(sceneName, params)
     return self:internalOpenScene(sceneName, params, false)
 end
 
+function SceneMgr:_getNextTransition()
+    if self.blockTransition then return end
+
+    local p = table.remove(self.transitionQueue, 1)
+    if not p then return end
+
+    self.blockTransition = true
+    p.method(self, unpack(p.params))
+end
+
 ---
 -- Open the scene for the internal implementation.
 -- variable that can be specified in params are as follows.
@@ -1376,20 +1388,10 @@ end
 --   <li>easeType: EaseType to animation scene. </li>
 --   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
-function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
-    table.insertElement(self.transitionQueue, {sceneName, params, currentCloseFlag})
+function SceneMgr:internalOpenScene(...)
+    table.insertElement(self.transitionQueue, {method = self._internalOpenScene, params = {...}})
 
-    self:__internalOpenScene()
-end
-
-function SceneMgr:__internalOpenScene()
-    if self.blockTransition then return end
-
-    local p = table.remove(self.transitionQueue, 1)
-    if not p then return end
-
-    self.blockTransition = true
-    self:_internalOpenScene(p[1], p[2], p[3])
+    self:_getNextTransition()
 end
 
 function SceneMgr:_internalOpenScene(sceneName, params, currentCloseFlag)
