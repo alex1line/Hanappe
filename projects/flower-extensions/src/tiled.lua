@@ -187,6 +187,24 @@ function TileMap:saveMapData()
 end
 
 ---
+-- Clear the map data.
+function TileMap:clearMapData()
+    self:removeChildren()
+
+    self.data = {}
+    self.version = 0
+    self.orientation = ""
+    self.mapWidth = 0
+    self.mapHeight = 0
+    self.tileWidth = 0
+    self.tileHeight = 0
+    self.mapLayers = {}
+    self.tilesets = {}
+    self.properties = {}
+    self.resourceDirectory = ""
+end
+
+---
 -- Update the order of the rendering.
 -- If you are using a single layer,
 -- you should update the drawing order in a timely manner.
@@ -344,15 +362,28 @@ function TileMap:getProperty(key)
 end
 
 ---
+-- Returns the property.
+-- @param key key.
+-- @return value.
+function TileMap:getPropertyAsNumber(key)
+    local value = self:getProperty(key)
+    if value then
+        return tonumber(value)
+    end
+end
+
+---
 -- Returns the tile property with the specified gid.
 -- @param gid tile gid
 -- @param key key of the properties
 -- @return property value
 function TileMap:getTileProperty(gid, key)
     local tileset = self:findTilesetByGid(gid)
-    local tileId = tileset:getTileIdByGid(gid)
-    if tileset and tileId then
-        return tileset:getTileProperty(tileId, key)
+    if tileset then
+        local tileId = tileset:getTileIdByGid(gid)
+        if tileset and tileId then
+            return tileset:getTileProperty(tileId, key)
+        end
     end
 end
 
@@ -362,9 +393,11 @@ end
 -- @return tile property value
 function TileMap:getTileProperties(gid)
     local tileset = self:findTilesetByGid(gid)
-    local tileId = tileset:getTileIdByGid(gid)
-    if tileset and tileId then
-        return tileset:getTileProperties(tileId)
+    if tileset then
+        local tileId = tileset:getTileIdByGid(gid)
+        if tileset and tileId then
+            return tileset:getTileProperties(tileId)
+        end
     end
 end
 
@@ -465,6 +498,17 @@ end
 -- @return value.
 function TileLayer:getProperty(key)
     return self.properties[key]
+end
+
+---
+-- Returns the property.
+-- @param key key.
+-- @return value.
+function TileLayer:getPropertyAsNumber(key)
+    local value = self:getProperty(key)
+    if value then
+        return tonumber(value)
+    end
 end
 
 ---
@@ -675,7 +719,7 @@ M.TileObject = TileObject
 ---
 -- The constructor.
 -- @param tileMap TileMap
-function TileObject:init(tileMap)
+function TileObject:init(tileMap, objectData)
     Group.init(self)
     self.tileMap = assert(tileMap)
     self.name = ""
@@ -744,7 +788,7 @@ end
 -- Update a priority.
 function TileObject:updatePriority()
     if self.parent then
-        local parentPriority = self.parent:getPriority()
+        local parentPriority = self.parent:getPriority() or 0
         self:setPriority(parentPriority + self:getTop())
     end    
 end
@@ -810,6 +854,13 @@ end
 
 function TileObject:getProperty(key)
     return self.properties[key]
+end
+
+function TileObject:getPropertyAsNumber(key)
+    local value = self:getProperty(key)
+    if value then
+        return tonumber(value)
+    end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -882,7 +933,7 @@ end
 -- @param objectData object data
 -- @return TileObject
 function TileObjectGroup:createObject(objectData)
-    local tileObject = self.objectFactory:newInstance(self.tileMap)
+    local tileObject = self.objectFactory:newInstance(self.tileMap, objectData)
     tileObject:loadData(objectData)
     self:addObject(tileObject)
     return tileObject
@@ -978,6 +1029,17 @@ end
 -- @return value.
 function TileObjectGroup:getProperty(key)
     return self.properties[key]
+end
+
+---
+-- Returns the property.
+-- @param key key.
+-- @return value.
+function TileObjectGroup:getPropertyAsNumber(key)
+    local value = self:getProperty(key)
+    if value then
+        return tonumber(value)
+    end
 end
 
 ----------------------------------------------------------------------------------------------------

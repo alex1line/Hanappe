@@ -17,6 +17,7 @@ local M = {}
 local table
 local math
 local class
+local KeyCode
 local Executors
 local Resources
 local PropertyUtils
@@ -231,10 +232,13 @@ function class:__call(...)
     for i = #bases, 1, -1 do
         table.copy(bases[i], clazz)
     end
+    clazz.__class = clazz
     clazz.__super = bases[1]
     clazz.__call = function(self, ...)
         return self:__new(...)
     end
+    clazz.__interface = {__index = clazz}
+    setmetatable(clazz.__interface, clazz.__interface)
     return setmetatable(clazz, clazz)
 end
 
@@ -260,18 +264,11 @@ function class:__object_factory()
 
     if moai_class then
         local obj = moai_class.new()
-        obj.__class = self
-
-        local interface = { }
-        setmetatable(interface,interface)
-        interface.__index = self
-        obj:setInterface(interface)
-
+        obj:setInterface(self.__interface)
         return obj
     end
 
-    local obj = {__index = self, __class = self}
-    return setmetatable(obj, obj)
+    return setmetatable({}, self.__interface)
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -437,6 +434,220 @@ end
 function math.normalize( x, y )
     local d = math.distance( x, y )
     return x/d, y/d
+end
+
+----------------------------------------------------------------------------------------------------
+-- @type KeyCode
+--
+-- Enumeration of the key on the keyboard.
+----------------------------------------------------------------------------------------------------
+
+local KeyCode = {}
+M.KeyCode = KeyCode
+
+--- The 0 key
+KeyCode.KEY_0 = 48
+--- The 1 key
+KeyCode.KEY_1 = 49
+--- The 2 key
+KeyCode.KEY_2 = 50
+--- The 3 key
+KeyCode.KEY_3 = 51
+--- The 4 key
+KeyCode.KEY_4 = 52
+--- The 5 key
+KeyCode.KEY_5 = 53
+--- The 6 key
+KeyCode.KEY_6 = 54
+--- The 7 key
+KeyCode.KEY_7 = 55
+--- The 8 key
+KeyCode.KEY_8 = 56
+--- The 9 key
+KeyCode.KEY_9 = 57
+--- The A key
+KeyCode.KEY_A = 97
+--- The B key
+KeyCode.KEY_B = 98
+--- The C key
+KeyCode.KEY_C = 99
+--- The D key
+KeyCode.KEY_D = 100
+--- The E key
+KeyCode.KEY_E = 101
+--- The F key
+KeyCode.KEY_F = 102
+--- The G key
+KeyCode.KEY_G = 103
+--- The H key
+KeyCode.KEY_H = 104
+--- The I key
+KeyCode.KEY_I = 105
+--- The J key
+KeyCode.KEY_J = 106
+--- The K key
+KeyCode.KEY_K = 107
+--- The L key
+KeyCode.KEY_L = 108
+--- The M key
+KeyCode.KEY_M = 109
+--- The N key
+KeyCode.KEY_N = 110
+--- The O key
+KeyCode.KEY_O = 111
+--- The P key
+KeyCode.KEY_P = 112
+--- The Q key
+KeyCode.KEY_Q = 113
+--- The R key
+KeyCode.KEY_R = 114
+--- The S key
+KeyCode.KEY_S = 115
+--- The T key
+KeyCode.KEY_T = 116
+--- The U key
+KeyCode.KEY_U = 117
+--- The V key
+KeyCode.KEY_V = 118
+--- The W key
+KeyCode.KEY_W = 119
+--- The X key
+KeyCode.KEY_X = 120
+--- The Y key
+KeyCode.KEY_Y = 121
+--- The Z key
+KeyCode.KEY_Z = 122
+--- The space key
+KeyCode.KEY_SPACE = 32
+--- The left shift key
+KeyCode.KEY_LEFT_SHIFT = 481
+--- The right shift key
+KeyCode.KEY_RIGHT_SHIFT = 485
+--- The left Ctrl key
+KeyCode.KEY_LEFT_CTRL = 480
+--- The right Ctrl key
+KeyCode.KEY_RIGHT_CTRL = 484
+--- The left alt key
+KeyCode.KEY_LEFT_ALT = 482
+--- The right alt key
+KeyCode.KEY_RIGHT_ALT = 486
+--- The backspace key
+KeyCode.KEY_BACKSPACE = 8
+--- The tab key
+KeyCode.KEY_TAB = 9
+--- The enter key
+KeyCode.KEY_ENTER = 13
+--- The insert key
+KeyCode.KEY_INSERT = 329
+--- The delete key
+KeyCode.KEY_DELETE = 127
+--- The home key
+KeyCode.KEY_HOME = 330
+--- The end key
+KeyCode.KEY_END = 333
+--- The page-up key
+KeyCode.KEY_PAGE_UP = 331
+--- The page-down key
+KeyCode.KEY_PAGE_DOWN = 334
+--- The cursor-left key
+KeyCode.KEY_LEFT = 336
+--- The cursor-right key
+KeyCode.KEY_RIGHT = 335
+--- The cursor-up key
+KeyCode.KEY_UP = 338
+--- The cursor-down key
+KeyCode.KEY_DOWN = 337
+--- The escape key
+KeyCode.KEY_ESCAPE = 27
+--- The F1 key
+KeyCode.KEY_F1 = 314
+--- The F2 key
+KeyCode.KEY_F2 = 315
+--- The F3 key
+KeyCode.KEY_F3 = 316
+--- The F4 key
+KeyCode.KEY_F4 = 317
+--- The F5 key
+KeyCode.KEY_F5 = 318
+--- The F6 key
+KeyCode.KEY_F6 = 319
+--- The F7 key
+KeyCode.KEY_F7 = 320
+--- The F8 key
+KeyCode.KEY_F8 = 321
+--- The F9 key
+KeyCode.KEY_F9 = 322
+--- The F10 key
+KeyCode.KEY_F10 = 323
+--- The F11 key
+KeyCode.KEY_F11 = 324
+--- The F12 key
+KeyCode.KEY_F12 = 325
+--- The print screen key
+KeyCode.KEY_PRINT_SCREEN = 326
+--- The scroll lock key
+KeyCode.KEY_SCROLL_LOCK = 327
+--- The pause key
+KeyCode.KEY_PAUSE = 328
+--- The caps lock key
+KeyCode.KEY_CAPS_LOCK = 313
+--- The num-lock key on the number pad
+KeyCode.KEY_NUM_LOCK = 339
+--- The divide key on the number pad
+KeyCode.KEY_NUM_DIVIDE = 340
+--- The times key on the number pad
+KeyCode.KEY_NUM_TIMES = 341
+--- The minus key on the number pad
+KeyCode.KEY_NUM_MINUS = 342
+--- The plus key on the number pad
+KeyCode.KEY_NUM_PLUS = 343
+--- The enter key on the number pad
+KeyCode.KEY_NUM_ENTER = 344
+--- The point key on the number pad
+KeyCode.KEY_NUM_POINT = 355
+--- The 0 key on the number pad
+KeyCode.KEY_NUM_0 = 354
+--- The 1 key on the number pad
+KeyCode.KEY_NUM_1 = 345
+--- The 2 key on the number pad
+KeyCode.KEY_NUM_2 = 346
+--- The 3 key on the number pad
+KeyCode.KEY_NUM_3 = 347
+--- The 4 key on the number pad
+KeyCode.KEY_NUM_4 = 348
+--- The 5 key on the number pad
+KeyCode.KEY_NUM_5 = 349
+--- The 6 key on the number pad
+KeyCode.KEY_NUM_6 = 350
+--- The 7 key on the number pad
+KeyCode.KEY_NUM_7 = 351
+--- The 8 key on the number pad
+KeyCode.KEY_NUM_8 = 352
+--- The 9 key on the number pad
+KeyCode.KEY_NUM_9 = 353
+
+---
+-- Returns Shift Key has been pressed.
+-- @param key Key code.
+-- @return True if it is Shift Key.
+function KeyCode.isShiftKey(key)
+    return key == KeyCode.KEY_LEFT_SHIFT or key == KEY_RIGHT_SHIFT
+end
+
+---
+-- Returns Ctrl Key has been pressed.
+-- @param key Key code.
+-- @return True if it is Ctrl Key.
+function KeyCode.isCtrlKey(key)
+    return key == KeyCode.KEY_LEFT_CTRL or key == KEY_RIGHT_CTRL
+end
+
+---
+-- Returns Alt Key has been pressed.
+-- @param key Key code.
+-- @return True if it is Alt Key.
+function KeyCode.isAltKey(key)
+    return key == KeyCode.KEY_LEFT_ALT or key == KEY_RIGHT_ALT
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -910,6 +1121,32 @@ function EventDispatcher:removeEventListener(eventType, callback, source)
 end
 
 ---
+-- Set the event listener.
+-- Event listener that you set in this function is one.
+-- @param eventName event name
+-- @param callback event listener
+function EventDispatcher:setEventListener(eventType, callback, source, priority)
+    local propertyName = "_eventListener_" .. assert(eventType)
+    local oldListener = self[propertyName]
+
+    if oldListener and oldListener.callback == callback
+        and oldListener.source == source
+        and oldListener.priority == priority then
+        return
+    end
+
+    if oldListener then
+        self:removeEventListener(oldListener.type, oldListener.callback, oldListener.source)
+    end
+
+    if callback then
+        local newListener = EventListener(eventType, callback, source, priority)
+        self[propertyName] = newListener
+        self:addEventListener(newListener.type, newListener.callback, newListener.source, newListener.priority)
+    end
+end
+
+---
 -- Returns true if you have an event listener.
 -- @param eventType
 -- @param callback
@@ -1359,6 +1596,7 @@ end
 --   <li>animation: Scene animation of transition. </li>
 --   <li>second: Time to scene animation. </li>
 --   <li>easeType: EaseType to animation scene. </li>
+--   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
 function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
     params = params or {}
@@ -1382,7 +1620,7 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
     self.nextScene:open(params)
 
     -- scene animation
-    local fun = function()
+    local funAnimation = function()
         local animation = self:getSceneAnimationByName(params.animation)
         animation(self.currentScene or Scene(), self.nextScene, params)
 
@@ -1398,10 +1636,10 @@ function SceneMgr:internalOpenScene(sceneName, params, currentCloseFlag)
         self:dispatchEvent(Event.OPEN_COMPLETE)
     end
 
-    if params.atomic then
-        fun()
+    if params.sync then
+        funAnimation()
     else
-        Executors.callOnce(fun)
+        Executors.callOnce(funAnimation)
     end
 
     return self.nextScene
@@ -1416,6 +1654,7 @@ end
 --   <li>easeType: EaseType to animation scene. </li>
 --   <li>backScene: The name of the scene you want to back. </li>
 --   <li>backSceneCount: Number of scene you want to back. </li>
+--   <li>sync: Other threads wait until action will finish. </li>
 -- </ul>
 -- @param params (option)Parameters of the Scene
 function SceneMgr:closeScene(params)
@@ -1444,7 +1683,7 @@ function SceneMgr:closeScene(params)
     -- stop current scene
     self.currentScene:stop(params)
 
-    local fun = function()
+    local funAnimation = function()
         local animation = self:getSceneAnimationByName(params.animation)
         animation(self.closingSceneGroup, self.nextScene or Scene(), params)
 
@@ -1466,10 +1705,10 @@ function SceneMgr:closeScene(params)
         self:dispatchEvent(Event.CLOSE_COMPLETE)
     end
 
-    if params.atomic then
-        fun()
+    if params.sync then
+        funAnimation()
     else
-        Executors.callOnce(fun)
+        Executors.callOnce(funAnimation)
     end
 
     return true
@@ -1666,9 +1905,16 @@ function DeckMgr:createTileImageDeck(textureWidth, textureHeight, tileWidth, til
     local tileY = math.floor((th - margin) / (tileHeight + spacing))
 
     local deck = MOAIGfxQuadDeck2D.new()
+    deck.type = "TileImageDeck"
     deck.sheetSize = tileX * tileY
     deck:reserve(deck.sheetSize)
-    deck.type = "TileImageDeck"
+    deck.textureWidth = textureWidth
+    deck.textureHeight = textureHeight
+    deck.tileWidth = tileWidth
+    deck.tileHeight = tileHeight
+    deck.spacing = spacing
+    deck.margin = margin 
+    deck.gridFlag = gridFlag
     deck.flipX = flipX
     deck.flipY = flipY
 
@@ -2162,6 +2408,8 @@ function Group:init(layer, width, height)
     self.children = {}
     self.isGroup = true
     self.layer = layer
+    self.parentScissorRect = nil
+    self.contentScissorRect = nil
     self:setSize(width or 0, height or 0)
 
     self:setPivToCenter()
@@ -2177,6 +2425,23 @@ function Group:setSize(width, height)
 end
 
 ---
+-- Sets the bounds.
+-- This is the bounds of a Group, rather than of the children.
+-- @param xMin xMin
+-- @param yMin yMin
+-- @param zMin zMin
+-- @param xMax xMax
+-- @param yMax yMax
+-- @param zMax zMax
+function Group:setBounds(xMin, yMin, zMin, xMax, yMax, zMax)
+    MOAIPropInterface.setBounds(self, xMin, yMin, zMin, xMax, yMax, zMax)
+
+    if self.contentScissorRect then
+        self.contentScissorRect:setRect(xMin, yMin, xMax, yMax)
+    end
+end
+
+---
 -- Adds the specified child.
 -- @param child DisplayObject
 function Group:addChild(child)
@@ -2187,6 +2452,10 @@ function Group:addChild(child)
             child:setLayer(self.layer)
         elseif self.layer then
             self.layer:insertProp(child)
+        end
+
+        if self.contentScissorRect then
+            child:setScissorRect(self.contentScissorRect)
         end
 
         return true
@@ -2289,6 +2558,41 @@ function Group:setPriority(priority)
 
     for i, v in ipairs(self.children) do
         v:setPriority(priority)
+    end
+end
+
+function Group:setScissorRect(scissorRect)
+    MOAIPropInterface.setScissorRect(self, scissorRect)
+
+    for i, child in ipairs(self.children) do
+        if child.setParentScissorRect then
+            child:setParentScissorRect(scissorRect)
+        else
+            child:setScissorRect(scissorRect)
+        end
+    end
+end
+
+function Group:setParentScissorRect(parentRect)
+    self.parentScissorRect = parentRect
+
+    if self.contentScissorRect then
+        self.contentScissorRect:setScissorRect(self.parentScissorRect)
+    else
+        self:setScissorRect(self.parentScissorRect)
+    end
+end
+
+function Group:setScissorContent(enabled)
+    if enabled then
+        self.contentScissorRect = MOAIScissorRect.new()
+        self.contentScissorRect:setRect(0, 0, self:getWidth(), self:getHeight())
+        self.contentScissorRect:setScissorRect(self.parentScissorRect)
+        self.contentScissorRect:setAttrLink(MOAITransform.INHERIT_TRANSFORM, self, MOAITransform.TRANSFORM_TRAIT)
+        self:setScissorRect(self.contentScissorRect)
+    else
+        self.contentScissorRect = nil
+        self:setScissorRect(self.parentScissorRect)
     end
 end
 
@@ -2747,6 +3051,17 @@ function SheetImage:setTileSize(tileWidth, tileHeight, spacing, margin, flipX, f
 end
 
 ---
+-- Sets the texture flip.
+-- @param flipX (option)flipX
+-- @param flipY (option)flipY
+function SheetImage:setFlip(flipX, flipY)
+    local deck = self:getDeck()
+    deck = DeckMgr:getTileImageDeck(deck.textureWidth, deck.textureHeight, deck.tileWidth, deck.tileHeight,
+        deck.spacing, deck.margin, deck.gridFlag, flipX, flipY)
+    self:setDeck(deck)
+end
+
+---
 -- Sets the sheet's image index via a given subtexture name (for TexturePacker).
 -- @param name Sheet name.
 function SheetImage:setIndexByName(name)
@@ -3166,6 +3481,23 @@ function Label:setHighQuality(enabled, contentScale)
     local style = self:affirmStyle ()
     style:setScale(self.contentScale)
     self:setTextSize(self.textSize)
+end
+
+-- V1.6 and code compatibility of V1.5.
+if MOAITextLabel then
+    function Label:getStringBounds(index, length)
+        local xMin, yMin, xMax, yMax = self:getTextBounds(index, length)
+        if xMin == nil or yMin == nil or xMax == nil or yMax == nil then
+            return xMin, yMin, xMax, yMax
+        end
+
+        local w2, h2 = math.floor(self:getWidth() / 2), math.floor(self:getHeight() / 2)
+        xMin = xMin + w2
+        yMin = yMin + h2
+        xMax = xMax + w2
+        yMax = yMax + h2
+        return xMin, yMin, xMax, yMax
+    end
 end
 
 ---
